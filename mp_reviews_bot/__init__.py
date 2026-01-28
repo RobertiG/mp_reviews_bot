@@ -1,3 +1,4 @@
+"""Core package for mp_reviews_bot."""
 """mp_reviews_bot package."""
 
 from .xlsx_importer import (
