@@ -50,8 +50,6 @@ def subscription_required(channel: str, channel_url: Optional[str]) -> Screen:
             f"{channel}. После подписки нажмите кнопку ниже."
         ),
         buttons=_chunk_buttons(buttons),
-        buttons=_buttons([[Button("Проверить подписку", constants.ACTION_CHECK_SUBSCRIPTION)]]),
-        keyboard="inline",
     )
 
 
@@ -115,7 +113,6 @@ def dashboard_screen(project_name: Optional[str], is_admin: bool, dashboard: Opt
         buttons.append(Button("💳 Баланс", constants.ACTION_BALANCE))
     buttons.append(Button("⬅️ Назад", constants.ACTION_BACK))
     dashboard = dashboard or {}
-    ]
     if is_admin:
         buttons.append(Button("🏪 Кабинеты", constants.ACTION_CABINETS))
         buttons.append(Button("⚙️ Настройки проекта", constants.ACTION_PROJECT_SETTINGS))
@@ -144,10 +141,6 @@ def dashboard_screen(project_name: Optional[str], is_admin: bool, dashboard: Opt
                 if is_admin
                 else ""
             )
-            "• Новые: 12\n"
-            "• Без ответа: 5\n"
-            "• Эскалации: 1"
-            + ("\n• Баланс токенов: 87" if is_admin else "")
         ),
         buttons=_chunk_buttons(buttons),
     )
@@ -195,25 +188,6 @@ def feed_screen(events: Iterable[dict], filters: Optional[dict]) -> Screen:
         title="Лента отзывов и вопросов",
         body=body,
         buttons=_chunk_buttons(buttons),
-        body=(
-            "1) Отзыв • 5★ • SKU-001 • 10.03 • drafted\n"
-            "2) Вопрос • нейтр. • SKU-002 • 10.03 • new\n"
-            "3) Отзыв • 2★ • SKU-003 • 09.03 • escalated\n"
-            "4) Отзыв • 4★ • SKU-004 • 09.03 • approved\n"
-            "5) Вопрос • позитив • SKU-005 • 09.03 • drafted\n"
-            "6) Отзыв • 1★ • SKU-006 • 08.03 • new\n"
-            "7) Отзыв • 3★ • SKU-007 • 08.03 • sent\n"
-            "8) Вопрос • нейтр. • SKU-008 • 08.03 • drafted\n"
-            "9) Отзыв • 5★ • SKU-009 • 07.03 • approved\n"
-            "10) Отзыв • 4★ • SKU-010 • 07.03 • error"
-        ),
-        buttons=_buttons(
-            [
-                [Button("🔎 Фильтры", constants.ACTION_FEED_FILTERS)],
-                [Button("◀️ Пред", constants.ACTION_FEED), Button("След ▶️", constants.ACTION_FEED)],
-                [Button("⬅️ Назад", constants.ACTION_DASHBOARD)],
-            ]
-        ),
     )
 
 
@@ -282,32 +256,6 @@ def card_screen(card: Optional[dict]) -> Screen:
         title="Карточка отзыва",
         body=body,
         buttons=_chunk_buttons(buttons),
-        body=(
-            "Тип: Отзыв\n"
-            "Текст: Отличное качество, спасибо!\n"
-            "SKU: SKU-001 (WB: 12345, Ozon: 98765)\n"
-            "Оценка: 5★\n"
-            "Тональность: позитив\n"
-            "Дата: 10.03\n"
-            "Медиа: https://example.com/photo1\n"
-            "Статус: drafted\n"
-            "Предложенный ответ: Спасибо за отзыв!\n"
-            "Уверенность: 86%\n"
-            "KB источники:\n"
-            "• Всегда благодарим за отзыв\n"
-            "• Уточнить срок доставки"
-        ),
-        buttons=_buttons(
-            [
-                [Button("✅ Отправить", constants.ACTION_CARD), Button("✏️ Править", constants.ACTION_EDIT)],
-                [
-                    Button("♻️ Перегенерировать", constants.ACTION_REGENERATE),
-                    Button("➕ Добавить правило", constants.ACTION_ADD_KB_RULE),
-                ],
-                [Button("🚫 Эскалация", constants.ACTION_CARD)],
-                [Button("⬅️ Назад в ленту", constants.ACTION_FEED)],
-            ]
-        ),
     )
 
 
@@ -332,11 +280,6 @@ def regenerate_screen() -> Screen:
         title="Регенерация ответа",
         body="Генерируем новый ответ...",
         buttons=_chunk_buttons([Button("⬅️ Назад", constants.ACTION_BACK)]),
-    )
-
-
-        buttons=_buttons([[Button("⬅️ Назад в карточку", constants.ACTION_CARD)]]),
-        keyboard="inline",
     )
 
 
@@ -410,19 +353,6 @@ def kb_list_screen(is_admin: bool, rules: Iterable[dict]) -> Screen:
         title="База знаний",
         body=body,
         buttons=_chunk_buttons(buttons),
-        body=(
-            "1) 12.03 — Проект — Всегда благодарим за отзыв.\n"
-            "2) 11.03 — Проект — Используем дружелюбный тон.\n"
-            "3) 11.03 — SKU-001 — Уточнить срок доставки.\n"
-            "4) 10.03 — SKU-002 — Благодарим за покупку.\n"
-            "5) 10.03 — SKU-003 — Извиняемся и предлагаем замену.\n"
-            "6) 09.03 — Проект — Не упоминать скидки.\n"
-            "7) 09.03 — SKU-004 — Сообщаем о гарантии.\n"
-            "8) 08.03 — SKU-005 — Просим фото дефекта.\n"
-            "9) 08.03 — Проект — Благодарим за обратную связь.\n"
-            "10) 07.03 — SKU-006 — Уточняем комплектацию."
-        ),
-        buttons=_buttons(buttons),
     )
 
 
@@ -438,15 +368,6 @@ def kb_delete_screen(rules: Iterable[dict]) -> Screen:
         title="Удаление правила",
         body=body,
         buttons=_chunk_buttons(buttons),
-        body="Выберите правило для удаления или вернитесь назад.",
-        buttons=_buttons(
-            [
-                [Button("🗑 1", constants.ACTION_KB_DELETE), Button("🗑 2", constants.ACTION_KB_DELETE)],
-                [Button("🗑 3", constants.ACTION_KB_DELETE), Button("🗑 4", constants.ACTION_KB_DELETE)],
-                [Button("⬅️ Назад", constants.ACTION_KB_LIST)],
-            ]
-        ),
-        keyboard="inline",
     )
 
 
@@ -471,14 +392,6 @@ def cabinets_screen(cabinets: Iterable[dict]) -> Screen:
         title="Кабинеты маркетплейсов",
         body=body,
         buttons=_chunk_buttons(buttons),
-        body="Подключённые кабинеты: WB-1, Ozon-1.",
-        buttons=_buttons(
-            [
-                [Button("➕ Добавить кабинет", constants.ACTION_ONBOARDING)],
-                [Button("🔄 Проверить подключение", constants.ACTION_CABINETS)],
-                [Button("🗑 Удалить кабинет", constants.ACTION_CABINETS)],
-            ]
-        ),
     )
 
 
@@ -518,12 +431,6 @@ def project_settings_screen(settings: Optional[dict]) -> Screen:
             f"Автоотправка вопросы: {'включена' if settings.get('autosend_questions') else 'выключена'}"
         ),
         buttons=_chunk_buttons([Button("⬅️ Назад", constants.ACTION_BACK)]),
-            "Тон бренда: дружелюбный, экспертный.\n"
-            "Автогенерация 5/4★: включена\n"
-            "Автогенерация 1–3★: включена\n"
-            "Автогенерация вопросы: включена"
-        ),
-        buttons=[],
     )
 
 
@@ -547,19 +454,5 @@ def balance_screen(balance: Optional[dict]) -> Screen:
         body=body,
         buttons=_chunk_buttons(
             [Button("➕ Пополнить", constants.ACTION_BALANCE), Button("⬅️ Назад", constants.ACTION_BACK)]
-    return Screen(
-        key=constants.ACTION_BALANCE,
-        title="Баланс",
-        body=(
-            f"Текущий баланс: {balance.get('tokens', 0)} токенов.\n"
-            f"История списаний:\n{history}"
-        ),
-        buttons=_chunk_buttons(
-            [Button("➕ Пополнить", constants.ACTION_BALANCE), Button("⬅️ Назад", constants.ACTION_BACK)]
-        body="Текущий баланс: 87 токенов.\nИстория списаний: TBD.",
-        buttons=_buttons(
-            [
-                [Button("➕ Пополнить", constants.ACTION_BALANCE)],
-            ]
         ),
     )
