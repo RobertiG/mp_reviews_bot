@@ -330,12 +330,6 @@ async def update_nav_stack(state: FSMContext, current_action: Optional[str], pay
     stack.append({"action": current_action, "payload": payload})
     await state.update_data(nav_stack=stack)
 
-        return
-    data = await state.get_data()
-    stack = data.get("nav_stack", [])
-    stack.append({"action": current_action, "payload": payload})
-    await state.update_data(nav_stack=stack)
-
 
 async def route_action(
     action: str,
