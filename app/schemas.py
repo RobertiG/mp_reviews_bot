@@ -153,6 +153,53 @@ class BalanceUpdate(BaseModel):
     reason: str
 
 
+class ProfileOut(BaseModel):
+    user_id: int
+    telegram_user_id: str
+    is_admin: bool
+
+
+class DashboardOut(BaseModel):
+    new: int
+    without_answer: int
+    escalated: int
+    balance_tokens: int
+
+
+class FeedOut(BaseModel):
+    items: List[EventOut]
+    total: int
+    limit: int
+    offset: int
+
+
+class EventDetailOut(EventOut):
+    kb_sources: List[str] = []
+
+
+class TokenLedgerOut(BaseModel):
+    id: int
+    delta: int
+    reason: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class BalanceDetailOut(BaseModel):
+    owner_id: int
+    tokens: int
+    ledger: List[TokenLedgerOut] = []
+
+    class Config:
+        from_attributes = True
+
+
+class OnboardingOut(BaseModel):
+    has_cabinets: bool
+    cabinets_count: int
+
 class AdminMetricsOut(BaseModel):
     projects: int
     events: int
