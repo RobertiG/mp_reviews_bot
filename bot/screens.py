@@ -28,6 +28,14 @@ def _format_date(value: Optional[str]) -> str:
     except ValueError:
         return value
 
+def _format_date(value: Optional[str]) -> str:
+    if not value:
+        return "—"
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).strftime("%d.%m")
+    except ValueError:
+        return value
+
 
 def subscription_required(channel: str, channel_url: Optional[str]) -> Screen:
     buttons = []
@@ -71,6 +79,10 @@ def project_selection_screen(projects: Iterable[dict], is_admin: bool) -> Screen
         buttons.append(Button("➕ Новый проект", constants.ACTION_SELECT_PROJECT))
         buttons.append(Button("⚙️ Настройки", constants.ACTION_PROJECT_SETTINGS))
     buttons.append(Button("⬅️ Назад", constants.ACTION_BACK))
+    if is_admin:
+        buttons.append(Button("➕ Новый проект", constants.ACTION_SELECT_PROJECT))
+        buttons.append(Button("⚙️ Настройки", constants.ACTION_PROJECT_SETTINGS))
+    buttons.append(Button("⬅️ Назад", constants.ACTION_BACK))
 def project_selection_screen(projects: Iterable[str], is_admin: bool) -> Screen:
     buttons: List[List[Button]] = []
     for name in projects:
@@ -96,6 +108,13 @@ def dashboard_screen(project_name: Optional[str], is_admin: bool, dashboard: Opt
         Button("📝 Лента", constants.ACTION_FEED),
         Button("📚 KB", constants.ACTION_KB_LIST),
         Button("📊 Статистика", constants.ACTION_DASHBOARD),
+    ]
+    if is_admin:
+        buttons.append(Button("🏪 Кабинеты", constants.ACTION_CABINETS))
+        buttons.append(Button("⚙️ Настройки проекта", constants.ACTION_PROJECT_SETTINGS))
+        buttons.append(Button("💳 Баланс", constants.ACTION_BALANCE))
+    buttons.append(Button("⬅️ Назад", constants.ACTION_BACK))
+    dashboard = dashboard or {}
     ]
     if is_admin:
         buttons.append(Button("🏪 Кабинеты", constants.ACTION_CABINETS))
@@ -313,6 +332,9 @@ def regenerate_screen() -> Screen:
         title="Регенерация ответа",
         body="Генерируем новый ответ...",
         buttons=_chunk_buttons([Button("⬅️ Назад", constants.ACTION_BACK)]),
+    )
+
+
         buttons=_buttons([[Button("⬅️ Назад в карточку", constants.ACTION_CARD)]]),
         keyboard="inline",
     )
@@ -515,6 +537,16 @@ def balance_screen(balance: Optional[dict]) -> Screen:
         )
     else:
         history = "Нет операций."
+    body = (
+        f"Текущий баланс: {balance.get('tokens', 0)} токенов.\n"
+        f"История списаний:\n{history}"
+    )
+    return Screen(
+        key=constants.ACTION_BALANCE,
+        title="Баланс",
+        body=body,
+        buttons=_chunk_buttons(
+            [Button("➕ Пополнить", constants.ACTION_BALANCE), Button("⬅️ Назад", constants.ACTION_BACK)]
     return Screen(
         key=constants.ACTION_BALANCE,
         title="Баланс",

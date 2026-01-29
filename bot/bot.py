@@ -330,6 +330,12 @@ async def update_nav_stack(state: FSMContext, current_action: Optional[str], pay
     stack.append({"action": current_action, "payload": payload})
     await state.update_data(nav_stack=stack)
 
+        return
+    data = await state.get_data()
+    stack = data.get("nav_stack", [])
+    stack.append({"action": current_action, "payload": payload})
+    await state.update_data(nav_stack=stack)
+
 
 async def route_action(
     action: str,
@@ -468,7 +474,130 @@ def build_keyboard(screen: Screen) -> Optional[types.ReplyKeyboardMarkup | types
     reply_rows = [[types.KeyboardButton(text=btn.text) for btn in row] for row in screen.buttons]
     return types.ReplyKeyboardMarkup(keyboard=reply_rows, resize_keyboard=True)
 
+async def route_action(
+    action: str,
+    target: types.Message | types.CallbackQuery,
+    state: FSMContext,
+    payload: Optional[str] = None,
+    current_action: Optional[str] = None,
+) -> None:
+    channel_id = settings.telegram_channel_id or constants.DEFAULT_REQUIRED_CHANNEL
+    channel_url = settings.telegram_channel_url or settings.tg_channel_url
+    if channel_id:
+        force_check = action == constants.ACTION_CHECK_SUBSCRIPTION
+        try:
+            subscribed = await refresh_subscription(
+                target.from_user.id, state, channel_id, force=force_check
+            )
+        except RuntimeError as exc:
+            await target.answer(str(exc))
+            await send_screen(target, screens.subscription_required(channel_id, channel_url))
+            await state.set_state(ScreenStates.subscription)
+            await state.update_data(current_action=constants.ACTION_SUBSCRIPTION)
+            return
+        if not subscribed:
+            if action == constants.ACTION_CHECK_SUBSCRIPTION:
+                await target.answer("Подписка не найдена. Подпишитесь и попробуйте снова.")
+            await send_screen(target, screens.subscription_required(channel_id, channel_url))
+            await state.set_state(ScreenStates.subscription)
+            await state.update_data(current_action=constants.ACTION_SUBSCRIPTION)
+            return
+        if action == constants.ACTION_CHECK_SUBSCRIPTION:
+            data = await state.get_data()
+            if data.get("current_project_id"):
+                action = constants.ACTION_DASHBOARD
+            else:
+                action = constants.ACTION_SELECT_PROJECT
 
+    if action == constants.ACTION_BACK:
+        action, payload = await handle_back(state)
+    else:
+        data = await state.get_data()
+        await update_nav_stack(state, current_action, data.get("current_payload"))
+
+    api = BotAPI(settings.api_base_url)
+
+    if action == constants.ACTION_DASHBOARD and payload and payload.isdigit():
+        project_id = int(payload)
+        projects = await api.projects(target.from_user.id)
+        project = next((item for item in projects if item["id"] == project_id), None)
+        await state.update_data(
+            current_project_id=project_id,
+            current_project_name=project["name"] if project else None,
+            projects=projects,
+        )
+
+    if action == constants.ACTION_FEED and payload:
+        data = await state.get_data()
+        filters = data.get("feed_filters", {"limit": 10, "offset": 0})
+        if payload.startswith("offset="):
+            filters["offset"] = int(payload.split("=", 1)[1])
+        elif payload.startswith("status="):
+            status = payload.split("=", 1)[1]
+            filters = {"limit": 10, "offset": 0}
+            if status == "without_answer":
+                filters["without_answer"] = True
+            else:
+                filters["status"] = status
+        elif payload == "sku_prompt":
+            await state.update_data(pending_filter="sku")
+            await target.answer("Введите SKU для фильтрации.")
+            return
+        elif payload == "sentiment_prompt":
+            await state.update_data(pending_filter="sentiment")
+            await target.answer("Введите тональность (позитив/нейтр/негатив).")
+            return
+        await state.update_data(feed_filters=filters, pending_filter=None)
+
+    if action == constants.ACTION_KB_LIST and payload:
+        scope = payload.split("=", 1)[1] if "=" in payload else None
+        kb_filters = {"limit": 10}
+        if scope == "project":
+            kb_filters["scope"] = "project"
+        elif scope == "sku":
+            kb_filters["scope"] = "sku"
+        await state.update_data(kb_filters=kb_filters)
+
+    if action == constants.ACTION_KB_DELETE and payload and payload.isdigit():
+        await api.delete_kb_rule(target.from_user.id, int(payload))
+
+    if action == constants.ACTION_ADD_KB_RULE and payload:
+        data = await state.get_data()
+        draft = data.get("kb_rule_draft", {})
+        if payload.startswith("level="):
+            draft["level"] = payload.split("=", 1)[1]
+            if draft["level"] == "sku":
+                await state.update_data(kb_rule_draft=draft, pending_kb_sku=True)
+                await target.answer("Введите SKU для правила.")
+                return
+            draft.pop("internal_sku", None)
+        elif payload == "submit":
+            project_id = data.get("current_project_id")
+            if not project_id:
+                await target.answer("Сначала выберите проект.")
+                return
+            text = draft.get("text")
+            if not text:
+                await target.answer("Добавьте текст правила перед сохранением.")
+                return
+            await api.create_kb_rule(
+                target.from_user.id,
+                project_id,
+                {
+                    "project_id": project_id,
+                    "internal_sku": draft.get("internal_sku"),
+                    "text": text,
+                },
+            )
+            await state.update_data(kb_rule_draft={}, pending_kb_sku=None)
+            action = constants.ACTION_KB_LIST
+        await state.update_data(kb_rule_draft=draft)
+
+    try:
+        ctx = await build_context(action, target.from_user.id, state, api, payload=payload)
+    except httpx.HTTPError as exc:
+        await target.answer(f"Ошибка загрузки данных: {exc}")
+        return
 def format_screen_text(screen: Screen) -> str:
     if screen.body:
         return f"{screen.title}\n\n{screen.body}"
