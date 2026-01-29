@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.routers import projects, cabinets, skus, kb, events, settings, balance, xlsx, admin_metrics
+from app.routers import bot, projects, cabinets, skus, kb, events, settings, balance, xlsx, admin_metrics
 
 app = FastAPI(title="mp_reviews_bot")
 
@@ -13,6 +13,7 @@ app.include_router(settings.router)
 app.include_router(balance.router)
 app.include_router(xlsx.router)
 app.include_router(admin_metrics.router)
+app.include_router(bot.router)
 
 
 @app.get("/health")

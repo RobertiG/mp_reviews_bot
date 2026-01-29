@@ -29,13 +29,20 @@ def _build_routes() -> Dict[str, RouteHandler]:
             ctx.projects, ctx.is_admin
         ),
         constants.ACTION_DASHBOARD: lambda ctx: screens.dashboard_screen(
-            ctx.current_project, ctx.is_admin
+            ctx.current_project_name, ctx.is_admin, ctx.dashboard
         ),
-        constants.ACTION_FEED: lambda ctx: screens.feed_screen(),
-        constants.ACTION_FEED_FILTERS: lambda ctx: screens.feed_filters_screen(),
-        constants.ACTION_CARD: lambda ctx: screens.card_screen(),
-        constants.ACTION_EDIT: lambda ctx: screens.edit_screen(),
+        constants.ACTION_FEED: lambda ctx: screens.feed_screen(ctx.feed, ctx.feed_filters),
+        constants.ACTION_FEED_FILTERS: lambda ctx: screens.feed_filters_screen(ctx.feed_filters),
+        constants.ACTION_CARD: lambda ctx: screens.card_screen(ctx.card),
+        constants.ACTION_EDIT: lambda ctx: screens.edit_screen(ctx.edit_draft or (ctx.card or {}).get("suggested_reply")),
         constants.ACTION_REGENERATE: lambda ctx: screens.regenerate_screen(),
+        constants.ACTION_ADD_KB_RULE: lambda ctx: screens.add_kb_rule_screen(ctx.kb_rule_draft),
+        constants.ACTION_KB_LIST: lambda ctx: screens.kb_list_screen(ctx.is_admin, ctx.kb_rules),
+        constants.ACTION_KB_DELETE: lambda ctx: screens.kb_delete_screen(ctx.kb_rules),
+        constants.ACTION_CABINETS: lambda ctx: screens.cabinets_screen(ctx.cabinets),
+        constants.ACTION_ONBOARDING: lambda ctx: screens.onboarding_screen(ctx.onboarding),
+        constants.ACTION_PROJECT_SETTINGS: lambda ctx: screens.project_settings_screen(ctx.settings),
+        constants.ACTION_BALANCE: lambda ctx: screens.balance_screen(ctx.balance),
         constants.ACTION_ADD_KB_RULE: lambda ctx: screens.add_kb_rule_screen(),
         constants.ACTION_KB_LIST: lambda ctx: screens.kb_list_screen(ctx.is_admin),
         constants.ACTION_KB_DELETE: lambda ctx: screens.kb_delete_screen(),
@@ -68,12 +75,12 @@ def handle_action(
             except RuntimeError as exc:
                 notices.append(str(exc))
                 return NavigationResult(
-                    screen=screens.subscription_required(deps.required_channel),
+                    screen=screens.subscription_required(deps.required_channel, None),
                     notices=notices,
                 )
         if not ctx.has_subscription:
             return NavigationResult(
-                screen=screens.subscription_required(deps.required_channel),
+                screen=screens.subscription_required(deps.required_channel, None),
                 notices=notices,
             )
 
