@@ -1,4 +1,4 @@
-from app.routers import projects, cabinets, skus, kb, events, settings, balance, xlsx, admin_metrics
+from app.routers import bot, projects, cabinets, skus, kb, events, settings, balance, xlsx, admin_metrics
 
 __all__ = [
     "projects",
@@ -10,4 +10,5 @@ __all__ = [
     "balance",
     "xlsx",
     "admin_metrics",
+    "bot",
 ]

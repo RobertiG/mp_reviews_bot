@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     redis_url: str = "redis://redis:6379/0"
     telegram_bot_token: str = ""
     telegram_channel_id: str = ""
+    telegram_channel_url: str = ""
+    tg_channel_url: str = ""
+    api_base_url: str = "http://localhost:8000"
     encryption_key: str = ""
     free_tokens_per_month: int = 100
     log_retention_days: int = 90

@@ -16,8 +16,24 @@ def create_event(payload: schemas.EventCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{project_id}", response_model=list[schemas.EventOut])
-def list_events(project_id: int, status: str | None = None, db: Session = Depends(get_db)):
-    return crud.list_events(db, project_id, status)
+def list_events(
+    project_id: int,
+    status: str | None = None,
+    sentiment: str | None = None,
+    internal_sku: str | None = None,
+    limit: int = 100,
+    offset: int = 0,
+    db: Session = Depends(get_db),
+):
+    return crud.list_events(
+        db,
+        project_id,
+        status=status,
+        sentiment=sentiment,
+        internal_sku=internal_sku,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.post("/{event_id}/approve")
