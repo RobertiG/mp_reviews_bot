@@ -43,6 +43,13 @@ def _build_routes() -> Dict[str, RouteHandler]:
         constants.ACTION_ONBOARDING: lambda ctx: screens.onboarding_screen(ctx.onboarding),
         constants.ACTION_PROJECT_SETTINGS: lambda ctx: screens.project_settings_screen(ctx.settings),
         constants.ACTION_BALANCE: lambda ctx: screens.balance_screen(ctx.balance),
+        constants.ACTION_ADD_KB_RULE: lambda ctx: screens.add_kb_rule_screen(),
+        constants.ACTION_KB_LIST: lambda ctx: screens.kb_list_screen(ctx.is_admin),
+        constants.ACTION_KB_DELETE: lambda ctx: screens.kb_delete_screen(),
+        constants.ACTION_CABINETS: lambda ctx: screens.cabinets_screen(),
+        constants.ACTION_ONBOARDING: lambda ctx: screens.onboarding_screen(),
+        constants.ACTION_PROJECT_SETTINGS: lambda ctx: screens.project_settings_screen(),
+        constants.ACTION_BALANCE: lambda ctx: screens.balance_screen(),
     }
 
 
