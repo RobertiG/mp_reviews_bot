@@ -614,13 +614,17 @@ async def build_context(user_id: int, state: FSMContext) -> UserContext:
     if "projects" not in data:
         await state.update_data(projects=projects)
     is_admin = data.get("is_admin", True)
-    current_project = data.get("current_project")
+    current_project_id = data.get("current_project_id")
+    current_project_name = data.get("current_project_name") or data.get("current_project")
+    if current_project_name and not data.get("current_project_name"):
+        await state.update_data(current_project_name=current_project_name)
     has_subscription = data.get("has_subscription")
     return UserContext(
         user_id=user_id,
         is_admin=is_admin,
         has_subscription=has_subscription,
-        current_project=current_project,
+        current_project_id=current_project_id,
+        current_project_name=current_project_name,
         projects=projects,
     )
 
@@ -680,7 +684,19 @@ async def route_action(
 
     if action == constants.ACTION_DASHBOARD and current_action == constants.ACTION_SELECT_PROJECT:
         if payload_text:
-            await state.update_data(current_project=payload_text)
+            data = await state.get_data()
+            projects = data.get("projects") or []
+            current_project_id = None
+            current_project_name = payload_text
+            for project in projects:
+                if isinstance(project, dict) and project.get("name") == payload_text:
+                    current_project_id = project.get("id")
+                    current_project_name = project.get("name")
+                    break
+            await state.update_data(
+                current_project_id=current_project_id,
+                current_project_name=current_project_name,
+            )
 
     ctx = await build_context(target.from_user.id, state)
     deps = BotDependencies(
