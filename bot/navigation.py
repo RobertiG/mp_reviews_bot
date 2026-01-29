@@ -87,7 +87,7 @@ def handle_action(
     if action in ADMIN_ACTIONS and not ctx.is_admin:
         notices.append("Недостаточно прав для этого раздела.")
         return NavigationResult(
-            screen=screens.dashboard_screen(ctx.current_project, ctx.is_admin),
+            screen=screens.dashboard_screen(ctx.current_project_name, ctx.is_admin, ctx.dashboard),
             notices=notices,
         )
 
